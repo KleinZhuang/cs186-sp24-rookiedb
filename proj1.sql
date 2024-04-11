@@ -50,19 +50,47 @@ AS
 -- Question 2i
 CREATE VIEW q2i(namefirst, namelast, playerid, yearid)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+SELECT
+  namefirst, namelast, playerid, yearid
+FROM
+  ( SELECT * FROM halloffame t1
+    LEFT JOIN people t2 ON t1.playerID = t2.playerID
+    WHERE inducted = 'Y'
+    ORDER BY yearid DESC, playerID ASC )
 ;
 
 -- Question 2ii
 CREATE VIEW q2ii(namefirst, namelast, playerid, schoolid, yearid)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+SELECT namefirst, namelast, playerid,schoolID, yearid from (
+SELECT
+ *
+FROM
+ ( SELECT * FROM halloffame t1
+                   LEFT JOIN people t2 ON t1.playerID = t2.playerID
+   WHERE inducted = 'Y'
+   ORDER BY yearid DESC, playerID ASC ) t3
+
+   INNER JOIN (SELECT playerID, schools.schoolID  FROM collegeplaying  LEFT JOIN schools on collegeplaying.schoolID = schools.schoolID WHERE state = 'CA') t4
+              on t3.playerid = t4.playerID)
+ORDER BY yearID DESC, schoolID, playerID
 ;
 
 -- Question 2iii
 CREATE VIEW q2iii(playerid, namefirst, namelast, schoolid)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+SELECT playerid,namefirst, namelast,schoolID from (
+SELECT
+  *
+FROM
+  ( SELECT * FROM halloffame t1
+                    LEFT JOIN people t2 ON t1.playerID = t2.playerID
+    WHERE inducted = 'Y'
+  ) t3
+
+    LEFT JOIN (SELECT playerID, schools.schoolID  FROM collegeplaying  LEFT JOIN schools on collegeplaying.schoolID = schools.schoolID) t4
+              on t3.playerid = t4.playerID)
+ORDER BY playerID DESC, schoolID
 ;
 
 -- Question 3i
