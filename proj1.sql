@@ -94,21 +94,70 @@ ORDER BY playerID DESC, schoolID
 ;
 
 -- Question 3i
+-- SLG = (1B + 2x2B + 3x3B + 4xHR) / AB
 CREATE VIEW q3i(playerid, namefirst, namelast, yearid, slg)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+SELECT t1.playerID, people.nameFirst, people.nameLast, t1.yearID, slg from (
+SELECT yearID, playerID, teamID,
+      CAST(((`H` - `2B` - `3B` - `HR`) + 2 * `2B` + 3 * `3B` + 4 * `HR`) AS REAL) / (`AB`) AS slg from batting
+WHERE AB > 50
+GROUP BY yearID, playerID, teamID
+ORDER BY slg DESC
+) t1 LEFT JOIN people on t1.playerID = people.playerID
+  LIMIT 10;
 ;
 
 -- Question 3ii
 CREATE VIEW q3ii(playerid, namefirst, namelast, lslg)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+SELECT
+  t1.playerID,
+  people.nameFirst,
+  people.nameLast,
+  lslg
+FROM
+  (
+    SELECT
+      yearID,
+      playerID,
+      teamID,
+      CAST(((sum(`H`) - sum(`2B`) - sum(`3B`) - sum(`HR`)) + 2 * sum(`2B`) + 3 * sum(`3B`) + 4 * sum(`HR`)) AS REAL) / sum((`AB`)) AS lslg
+    FROM
+      batting
+    GROUP BY
+      playerID
+    HAVING
+        sum(`AB`) >= 50
+    ORDER BY
+      lslg DESC
+  ) t1
+    LEFT JOIN people ON t1.playerID = people.playerID
+  LIMIT 10;
 ;
 
 -- Question 3iii
 CREATE VIEW q3iii(namefirst, namelast, lslg)
 AS
-  SELECT 1, 1, 1 -- replace this line
+SELECT
+  people.nameFirst,
+  people.nameLast,
+  lslg
+FROM
+  (
+    SELECT
+      yearID,
+      playerID,
+      teamID,
+      CAST(((sum(`H`) - sum(`2B`) - sum(`3B`) - sum(`HR`)) + 2 * sum(`2B`) + 3 * sum(`3B`) + 4 * sum(`HR`)) AS REAL) / sum(`AB`) AS lslg
+    FROM
+      batting
+    GROUP BY
+      playerID
+    HAVING
+        sum(`AB`) >= 50 and lslg > (SELECT CAST(((sum(`H`) - sum(`2B`) - sum(`3B`) - sum(`HR`)) + 2 * sum(`2B`) + 3 * sum(`3B`) + 4 * sum(`HR`)) AS REAL) / sum(`AB`) AS lslg  from batting WHERE playerID = 'mayswi01')
+  ) t1
+    LEFT JOIN people ON t1.playerID = people.playerID
+ORDER BY nameFirst, nameLast
 ;
 
 -- Question 4i
